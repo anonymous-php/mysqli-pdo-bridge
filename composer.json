@@ -1,0 +1,19 @@
+{
+    "name": "anonymous-php/mysqli-pdo-bridge",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Anonymous PHP Developer",
+            "email": "anonym.php@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Anonymous\\MysqliPdoBridge\\": "src"
+        }
+    },
+    "require": {
+        "php": ">=5.5"
+    }
+}
