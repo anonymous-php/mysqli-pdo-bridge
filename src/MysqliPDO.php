@@ -20,6 +20,7 @@ class MysqliPDO extends \PDO
         \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
         \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_BOTH,
         \PDO::MYSQL_ATTR_INIT_COMMAND => '',
+        \PDO::ATTR_PERSISTENT => false,
     ];
 
 
@@ -32,7 +33,16 @@ class MysqliPDO extends \PDO
             $this->mysqli = $dsn;
         } else {
             list($host, $port, $dbname, $socket) = $this->parseDsn($dsn);
-            $this->mysqli = new \mysqli($host, $username, $passwd, $dbname, $port, $socket);
+
+            if (!empty($this->options[\PDO::ATTR_PERSISTENT])) {
+                $host = "p:{$host}";
+            }
+
+            $this->mysqli = @(new \mysqli($host, $username, $passwd, $dbname, $port, $socket));
+
+            if ($this->mysqli->connect_errno) {
+                throw new MysqliPDOException($this->mysqli->connect_error, $this->mysqli->connect_errno);
+            }
 
             if (!empty($this->options[\PDO::MYSQL_ATTR_INIT_COMMAND])) {
                 $this->exec($this->options[\PDO::MYSQL_ATTR_INIT_COMMAND]);
@@ -54,7 +64,7 @@ class MysqliPDO extends \PDO
     {
         $pdoStatement = new MysqliPDOStatement($this, __FUNCTION__, $statement, $options);
 
-        return !$this->mysqli->errno
+        return !$this->isError($this->mysqli)
             ? $pdoStatement
             : false;
     }
@@ -64,7 +74,13 @@ class MysqliPDO extends \PDO
      */
     public function beginTransaction()
     {
-        return ($this->mysqli->begin_transaction() && ++$this->mysqliTransaction);
+        if (!$this->mysqli->begin_transaction()) {
+            return !$this->isError($this->mysqli);
+        }
+
+        ++$this->mysqliTransaction;
+
+        return true;
     }
 
     /**
@@ -72,7 +88,13 @@ class MysqliPDO extends \PDO
      */
     public function commit()
     {
-        return ($this->mysqli->commit() && (--$this->mysqliTransaction || true));
+        if (!$this->mysqli->commit()) {
+            return !$this->isError($this->mysqli);
+        }
+
+        --$this->mysqliTransaction;
+
+        return true;
     }
 
     /**
@@ -80,7 +102,13 @@ class MysqliPDO extends \PDO
      */
     public function rollBack()
     {
-        return ($this->mysqli->rollback() && (--$this->mysqliTransaction || true));
+        if (!$this->mysqli->rollback()) {
+            return !$this->isError($this->mysqli);
+        }
+
+        --$this->mysqliTransaction;
+
+        return true;
     }
 
     /**
@@ -108,12 +136,16 @@ class MysqliPDO extends \PDO
             ? $this->mysqli->query($statement)
             : $this->mysqli->real_query($statement);
 
+        if ($this->isError($this->mysqli)) {
+            return false;
+        }
+
         if ($result instanceof \mysqli_result) {
             $result->close();
             return true;
         }
 
-        return $result ? $this->mysqli->affected_rows : false;
+        return $this->mysqli->affected_rows;
     }
 
     /**
@@ -123,7 +155,7 @@ class MysqliPDO extends \PDO
     {
         $pdoStatement = new MysqliPDOStatement($this, __FUNCTION__, $statement, $mode, $arg3, $ctorargs);
 
-        return !$this->mysqli->errno
+        return !$this->isError($this->mysqli)
             ? $pdoStatement
             : false;
     }
@@ -205,7 +237,7 @@ class MysqliPDO extends \PDO
             $this->options[$option] = $value;
 
             if ($option == \PDO::ATTR_AUTOCOMMIT) {
-                $this->mysqli->autocommit((bool)$value);
+                $this->mysqli->autocommit((bool)$value) && $this->isError($this->mysqli);
             }
         }
 
@@ -245,6 +277,24 @@ class MysqliPDO extends \PDO
         }
 
         return array_values($dsnArray);
+    }
+
+    /**
+     * Check for error and throw an exception if configured
+     *
+     * @param $checkObject
+     * @return bool
+     * @throws MysqliPDOException
+     */
+    protected function isError($checkObject)
+    {
+        $isError = ($checkObject instanceof \mysqli || $checkObject instanceof \mysqli_stmt) && $checkObject->errno;
+
+        if ($isError && $this->options[\PDO::ATTR_ERRMODE] == \PDO::ERRMODE_EXCEPTION) {
+            throw new MysqliPDOException($checkObject->error, $checkObject->errno);
+        }
+
+        return $isError;
     }
 
 }
