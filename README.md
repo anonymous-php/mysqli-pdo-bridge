@@ -37,11 +37,29 @@ $pdo = MysqliPDO::withConnection($mysqli);
 $pdo = new MysqliPDO($mysqli);
 ```
 
+Get connection:
+
+```php
+<?php
+
+use \Anonymous\MysqliPdoBridge\MysqliPDO;
+
+/**
+ * @var MysqliPDO $pdo
+ */
+
+$mysqli = $pdo->getConnection();
+```
+
 ### Installation
 
 ```
 composer require anonymous-php/mysqli-pdo-bridge  
 ```
+
+### Error reporting
+
+Error reporting modes implemented as in PDO but error codes and messages belong to Mysqli.
 
 ### Implemented PDO fetch modes
 
@@ -73,7 +91,7 @@ composer require anonymous-php/mysqli-pdo-bridge
 
 ### Todo
 
+* Map "duplicate record" error on insert to PDO code
 * Method debugDumpParams
-* Error reporting and exceptions
 * Tests
 * Documentation
