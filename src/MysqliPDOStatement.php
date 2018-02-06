@@ -33,6 +33,9 @@ class MysqliPDOStatement extends \PDOStatement
     protected $defaultFetchArgument;
     protected $defaultFetchConstructorParams = array();
 
+    /** @var MysqliPDOErrorHandler */
+    protected $errorHandler;
+
 
     /**
      * MysqliPDOStatement constructor.
@@ -44,6 +47,7 @@ class MysqliPDOStatement extends \PDOStatement
     {
         $this->bridge = $bridge;
         $this->mysqli = $this->bridge->getConnection();
+
         $this->defaultFetchMode = $this->bridge->getAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE);
 
         $args = func_get_args();
@@ -56,42 +60,16 @@ class MysqliPDOStatement extends \PDOStatement
      */
     public function execute($input_parameters = null)
     {
-        $mysqliParams = array();
-        $paramsCount = count($this->queryBindings);
+        return $this->errorHandler->__invoke(function () use ($input_parameters) {
+            $mysqliParams = array();
+            $paramsCount = count($this->queryBindings);
 
-        if ($paramsCount) {
-            $types = '';
+            if ($paramsCount) {
+                $types = '';
 
-            foreach ($this->statementBindings as $name => $params) {
-                if (is_numeric($name)) {
-                    $n = $name - 1;
-                } else {
-                    $name = substr($name, 0, 1) != ':' ? ":{$name}" : $name;
-                    $n = array_search($name, $this->queryBindings);
-
-                    if ($n === false) {
-                        return false;
-                    }
-                }
-
-                list($var, $type, $length) = $params;
-                $value = $var;
-                if ($length !== null) {
-                    $value = mb_substr($value, 0, $length);
-                }
-                $mysqliParams[$n] = $value;
-                $types .= $this->mapPDOToMysqliType($type);
-            }
-
-            if (is_array($input_parameters) && count($input_parameters)) {
-                foreach ($input_parameters as $name => $value) {
+                foreach ($this->statementBindings as $name => $params) {
                     if (is_numeric($name)) {
-                        foreach ($this->queryBindings as $key => $var) {
-                            if ($var == '?' && !array_key_exists($key, $mysqliParams)) {
-                                $n = $key;
-                                break;
-                            }
-                        }
+                        $n = $name - 1;
                     } else {
                         $name = substr($name, 0, 1) != ':' ? ":{$name}" : $name;
                         $n = array_search($name, $this->queryBindings);
@@ -101,31 +79,59 @@ class MysqliPDOStatement extends \PDOStatement
                         }
                     }
 
+                    list($var, $type, $length) = $params;
+                    $value = $var;
+                    if ($length !== null) {
+                        $value = mb_substr($value, 0, $length);
+                    }
                     $mysqliParams[$n] = $value;
-                    $types .= 's';
+                    $types .= $this->mapPDOToMysqliType($type);
+                }
+
+                if (is_array($input_parameters) && count($input_parameters)) {
+                    foreach ($input_parameters as $name => $value) {
+                        if (is_numeric($name)) {
+                            foreach ($this->queryBindings as $key => $var) {
+                                if ($var == '?' && !array_key_exists($key, $mysqliParams)) {
+                                    $n = $key;
+                                    break;
+                                }
+                            }
+                        } else {
+                            $name = substr($name, 0, 1) != ':' ? ":{$name}" : $name;
+                            $n = array_search($name, $this->queryBindings);
+
+                            if ($n === false) {
+                                return false;
+                            }
+                        }
+
+                        $mysqliParams[$n] = $value;
+                        $types .= 's';
+                    }
+                }
+
+                if (!empty($mysqliParams)) {
+                    ksort($mysqliParams);
+
+                    $params = array();
+                    foreach ($mysqliParams as $key => $value) {
+                        $params[$key] = &$mysqliParams[$key];
+                    }
+
+                    array_unshift($mysqliParams, $types);
+                    if (!call_user_func_array([$this->statement, 'bind_param'], $mysqliParams)) {
+                        return false;
+                    }
                 }
             }
 
-            if (!empty($mysqliParams)) {
-                ksort($mysqliParams);
-
-                $params = array();
-                foreach ($mysqliParams as $key => $value) {
-                    $params[$key] = &$mysqliParams[$key];
-                }
-
-                array_unshift($mysqliParams, $types);
-                if (!call_user_func_array([$this->statement, 'bind_param'], $mysqliParams)) {
-                    return false;
-                }
+            if ($result = $this->statement->execute()) {
+                $this->result = $this->statement->get_result();
             }
-        }
 
-        if ($result = $this->statement->execute()) {
-            $this->result = $this->statement->get_result();
-        }
-
-        return $result;
+            return $result;
+        });
     }
 
     /**
@@ -145,9 +151,19 @@ class MysqliPDOStatement extends \PDOStatement
      */
     public function bindParam($parameter, &$variable, $data_type = \PDO::PARAM_STR, $length = null, $driver_options = null)
     {
-        $this->statementBindings[$parameter] = array(&$variable, $data_type, $length);
+        $parameter = !is_numeric($parameter) && substr($parameter, 0, 1) != ':'
+            ? ":{$parameter}"
+            : $parameter;
 
-        return true;
+        if (is_numeric($parameter) && isset($this->queryBindings[$parameter - 1]) && $this->queryBindings[$parameter - 1] == '?'
+            || !is_numeric($parameter) && in_array($parameter, $this->queryBindings))
+        {
+            $this->statementBindings[$parameter] = array(&$variable, $data_type, $length);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -155,9 +171,13 @@ class MysqliPDOStatement extends \PDOStatement
      */
     public function bindColumn($column, &$param, $type = \PDO::PARAM_STR, $maxlen = null, $driverdata = null)
     {
-        $this->resultBindings[$column] = array(&$param, $type, $maxlen);
+        if ($column > 0 && $column <= count($this->queryBindings)) {
+            $this->resultBindings[$column] = array(&$param, $type, $maxlen);
 
-        return true;
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -165,9 +185,19 @@ class MysqliPDOStatement extends \PDOStatement
      */
     public function bindValue($parameter, $value, $data_type = \PDO::PARAM_STR)
     {
-        $this->statementBindings[$parameter] = array($value, $data_type, null);
+        $parameter = !is_numeric($parameter) && substr($parameter, 0, 1) != ':'
+            ? ":{$parameter}"
+            : $parameter;
 
-        return true;
+        if (is_numeric($parameter) && isset($this->queryBindings[$parameter - 1]) && $this->queryBindings[$parameter - 1] == '?'
+            || !is_numeric($parameter) && in_array($parameter, $this->queryBindings))
+        {
+            $this->statementBindings[$parameter] = array($value, $data_type, null);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -314,6 +344,8 @@ class MysqliPDOStatement extends \PDOStatement
      */
     public function __destruct()
     {
+        $this->errorHandler = null;
+
         if ($this->result instanceof \mysqli_result) {
             $this->result->close();
         }
@@ -333,7 +365,9 @@ class MysqliPDOStatement extends \PDOStatement
     {
         $this->parseQuery($statement);
 
-        $this->statement = $this->mysqli->prepare($this->queryMysqli);
+        if ($this->statement = $this->mysqli->prepare($this->queryMysqli)) {
+            $this->errorHandler = new MysqliPDOErrorHandler($this->bridge, $this->statement);
+        }
     }
 
     /**
