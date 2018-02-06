@@ -2,7 +2,7 @@
 
 This library gives you the possibility to use mysqli connection with the PDO interfaces. No additional wrappers or methods provides.
 
-### Example
+### Examples
 
 New connection:
  
@@ -42,6 +42,18 @@ $pdo = new MysqliPDO($mysqli);
 ```
 composer require anonymous-php/mysqli-pdo-bridge  
 ```
+
+### Implemented fetch modes
+
+* PDO::FETCH_BOTH
+* PDO::FETCH_ASSOC
+* PDO::FETCH_NUM
+* PDO::FETCH_COLUMN
+* PDO::FETCH_CLASS
+* PDO::FETCH_OBJ
+* PDO::FETCH_FUNC
+* PDO::FETCH_INTO
+* PDO::FETCH_BOUND
 
 ### Possible issues
 

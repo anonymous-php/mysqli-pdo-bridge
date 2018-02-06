@@ -455,10 +455,10 @@ class MysqliPDOStatement extends \PDOStatement
             }
 
             return call_user_func($fetch_argument, $result);
-        } elseif ($fetch_style == \PDO::FETCH_CLASS) {
-            $fetch_argument = $fetch_argument ?: 'stdClass';
+        } elseif (in_array($fetch_style, array(\PDO::FETCH_CLASS, \PDO::FETCH_OBJ))) {
+            $fetch_argument = $fetch_argument && $fetch_style == \PDO::FETCH_CLASS ? $fetch_argument : 'stdClass';
 
-            return $ctor_args
+            return $ctor_args && $fetch_style == \PDO::FETCH_CLASS
                 ? $this->result->fetch_object($fetch_argument, $ctor_args)
                 : $this->result->fetch_object($fetch_argument);
         } elseif ($fetch_style == \PDO::FETCH_INTO) {
