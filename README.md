@@ -43,7 +43,7 @@ $pdo = new MysqliPDO($mysqli);
 composer require anonymous-php/mysqli-pdo-bridge  
 ```
 
-### Implemented fetch modes
+### Implemented PDO fetch modes
 
 * PDO::FETCH_BOTH
 * PDO::FETCH_ASSOC
@@ -54,6 +54,15 @@ composer require anonymous-php/mysqli-pdo-bridge
 * PDO::FETCH_FUNC
 * PDO::FETCH_INTO
 * PDO::FETCH_BOUND
+
+### Implemented PDO options (attributes)
+
+* PDO::ATTR_ERRMODE (PDO::ERRMODE_SILENT or PDO::ERRMODE_EXCEPTION, PDO::ERRMODE_SILENT by default)
+* PDO::ATTR_AUTOCOMMIT (true or false, true by default)
+* PDO::MYSQL_ATTR_USE_BUFFERED_QUERY (true or false, true by default)
+* PDO::ATTR_DEFAULT_FETCH_MODE (see implemented fetch modes)
+* PDO::MYSQL_ATTR_INIT_COMMAND (only for new connections)
+* PDO::ATTR_PERSISTENT (true or false, false by default)
 
 ### Possible issues
 
