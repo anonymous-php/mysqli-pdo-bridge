@@ -95,3 +95,7 @@ Error reporting modes implemented as in PDO but error codes and messages belong 
 * Method debugDumpParams
 * Tests
 * Documentation
+
+### Why?
+
+We have a huge legacy project with mysqli which we want to refactor and we still have PHP 5.5 on several nodes.
