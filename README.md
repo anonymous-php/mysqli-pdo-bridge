@@ -81,6 +81,7 @@ Error reporting modes implemented as in PDO but error codes and messages belong 
 * PDO::ATTR_DEFAULT_FETCH_MODE (see implemented fetch modes)
 * PDO::MYSQL_ATTR_INIT_COMMAND (only for new connections)
 * PDO::ATTR_PERSISTENT (true or false, false by default)
+* PDO::ATTR_CONNECTION_STATUS (read only, null on error)
 
 ### Possible issues
 

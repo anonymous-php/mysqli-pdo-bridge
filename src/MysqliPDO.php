@@ -178,6 +178,10 @@ class MysqliPDO extends \PDO
      */
     public function getAttribute($attribute)
     {
+        if ($attribute == \PDO::ATTR_CONNECTION_STATUS) {
+            return @$this->mysqli->stat();
+        }
+
         return isset($this->options[$attribute])
             ? $this->options[$attribute]
             : null;
