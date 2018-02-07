@@ -153,4 +153,87 @@ SQL;
         $this->assertEquals($pdoDeleteResult, $mysqliPdoDeleteResult);
     }
 
+    public function testLastInsertId()
+    {
+        $pdo = new MysqliPDO($this->getMysqliConnection());
+        $pdo->exec('TRUNCATE TABLE `test`');
+
+        $pdo->exec("INSERT INTO `test` (`a`, `b`, `c`, `d`) VALUES (2, 3.5, 'varchar', 'text')");
+        $this->assertEquals(1, $pdo->lastInsertId());
+
+        $pdo->exec("INSERT INTO `test` (`a`, `b`, `c`, `d`) VALUES (3, 4.5, 'varchar', 'text')");
+        $this->assertEquals(2, $pdo->lastInsertId());
+    }
+
+    public function testQuote()
+    {
+        $mysqliPdo = new MysqliPDO($this->getMysqliConnection());
+        $pdo = $this->getPdoConnection();
+
+        $this->assertEquals(
+            $mysqliPdo->quote("John's coffee"),
+            $pdo->quote("John's coffee")
+        );
+
+        $this->assertEquals(
+            $mysqliPdo->quote(true, PDO::PARAM_BOOL),
+            1
+        );
+
+        $this->assertEquals(
+            $mysqliPdo->quote(null, PDO::PARAM_NULL),
+            'NULL'
+        );
+
+        $this->assertEquals(
+            $mysqliPdo->quote('100.20', PDO::PARAM_INT),
+            100
+        );
+    }
+
+    public function testTransaction()
+    {
+        $mysqliPdo = new MysqliPDO($this->getMysqliConnection());
+        $pdo = $this->getPdoConnection();
+
+        $pdo->exec('TRUNCATE TABLE `test`');
+
+        $this->assertTrue($mysqliPdo->beginTransaction());
+        $this->assertTrue($mysqliPdo->inTransaction());
+
+        $this->assertFalse($mysqliPdo->beginTransaction());
+
+        $this->assertEquals(
+            $mysqliPdo->exec("INSERT INTO `test` (`a`, `b`, `c`, `d`) VALUES (2, 3.5, 'varchar', 'text')"),
+            1
+        );
+
+        $this->assertEquals(
+            $pdo->query('SELECT count(*) FROM `test')->fetchColumn(),
+            0
+        );
+
+        $this->assertTrue($mysqliPdo->rollBack());
+
+        $this->assertEquals(
+            $pdo->query('SELECT count(*) FROM `test')->fetchColumn(),
+            0
+        );
+
+        $this->assertTrue($mysqliPdo->beginTransaction());
+        $this->assertTrue($mysqliPdo->inTransaction());
+
+        $this->assertEquals(
+            $mysqliPdo->exec("INSERT INTO `test` (`a`, `b`, `c`, `d`) VALUES (2, 3.5, 'varchar', 'text')"),
+            1
+        );
+
+        $this->assertTrue($mysqliPdo->commit());
+
+        $this->assertEquals(
+            $pdo->query('SELECT count(*) FROM `test')->fetchColumn(),
+            1
+        );
+    }
+
 }

@@ -78,7 +78,9 @@ class MysqliPDO extends \PDO
     public function beginTransaction()
     {
         return $this->errorHandler->handle(function () {
-            return $this->mysqli->begin_transaction() && ++$this->mysqliTransaction;
+            return $this->mysqliTransaction == 0
+                ? $this->mysqli->begin_transaction() && ++$this->mysqliTransaction
+                : false;
         });
     }
 
@@ -197,7 +199,7 @@ class MysqliPDO extends \PDO
                 $string = 'NULL';
                 break;
             case \PDO::PARAM_BOOL:
-                $string = intval(!(in_array(strtolower($string), ['false', 'f']) || empty($value)));
+                $string = intval(!(in_array(strtolower($string), ['false', 'f'], true) || empty($string)));
                 break;
             case \PDO::PARAM_INT:
                 $string = intval($string);
