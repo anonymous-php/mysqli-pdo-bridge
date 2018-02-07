@@ -1,4 +1,4 @@
-# mysqli-pdo-bridge
+# mysqli-pdo-bridge [![Build Status](https://travis-ci.org/anonymous-php/mysqli-pdo-bridge.svg?branch=master)](https://travis-ci.org/anonymous-php/mysqli-pdo-bridge)
 
 This library gives you the possibility to use mysqli connection with the PDO interfaces. No additional wrappers or methods provides.
 
