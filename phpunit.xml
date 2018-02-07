@@ -11,10 +11,10 @@
     </filter>
     <php>
         <env name="host" value="127.0.0.1" />
-        <env name="port" value="3306" />
-        <env name="dbname" value="test" />
-        <env name="username" value="travis" />
-        <env name="password" value="" />
+        <env name="port" value="8833" />
+        <env name="dbname" value="letscount" />
+        <env name="username" value="letscount" />
+        <env name="password" value="letscount" />
         <env name="socket" value="" />
     </php>
 </phpunit>

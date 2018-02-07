@@ -74,7 +74,9 @@ class MysqliPDOErrorHandler
             mysqli_report($currentMysqliReportMode);
         }
 
-        return $falseOnError && ($error || $this->bridge->getConnection()->errno || $this->statement->errno)
+        return $falseOnError && ($error
+                    || $this->bridge->getConnection()->errno
+                    || $this->statement instanceof \mysqli_stmt && $this->statement->errno)
             ? false
             : $result;
     }
