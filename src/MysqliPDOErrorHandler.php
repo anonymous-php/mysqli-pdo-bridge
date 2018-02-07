@@ -58,7 +58,7 @@ class MysqliPDOErrorHandler
      * @param bool $falseOnError
      * @return bool|mixed
      */
-    public function __invoke(callable $callable, $falseOnError = true)
+    public function handle(callable $callable, $falseOnError = true)
     {
         $error = false;
 

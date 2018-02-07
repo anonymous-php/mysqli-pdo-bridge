@@ -60,7 +60,7 @@ class MysqliPDOStatement extends \PDOStatement
      */
     public function execute($input_parameters = null)
     {
-        return $this->errorHandler->__invoke(function () use ($input_parameters) {
+        return $this->errorHandler->handle(function () use ($input_parameters) {
             $mysqliParams = array();
             $paramsCount = count($this->queryBindings);
 

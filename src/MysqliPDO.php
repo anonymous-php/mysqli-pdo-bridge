@@ -67,7 +67,7 @@ class MysqliPDO extends \PDO
      */
     public function prepare($statement, $options = null)
     {
-        return $this->errorHandler->__invoke(function () use ($statement, $options) {
+        return $this->errorHandler->handle(function () use ($statement, $options) {
             return new MysqliPDOStatement($this, __FUNCTION__, $statement, $options);
         });
     }
@@ -77,7 +77,7 @@ class MysqliPDO extends \PDO
      */
     public function beginTransaction()
     {
-        return $this->errorHandler->__invoke(function () {
+        return $this->errorHandler->handle(function () {
             return $this->mysqli->begin_transaction() && ++$this->mysqliTransaction;
         });
     }
@@ -87,7 +87,7 @@ class MysqliPDO extends \PDO
      */
     public function commit()
     {
-        return $this->errorHandler->__invoke(function () {
+        return $this->errorHandler->handle(function () {
             return $this->mysqli->commit() && (--$this->mysqliTransaction || true);
         });
     }
@@ -97,7 +97,7 @@ class MysqliPDO extends \PDO
      */
     public function rollBack()
     {
-        return $this->errorHandler->__invoke(function () {
+        return $this->errorHandler->handle(function () {
             return $this->mysqli->rollback() && (--$this->mysqliTransaction || true);
         });
     }
@@ -123,7 +123,7 @@ class MysqliPDO extends \PDO
      */
     public function exec($statement)
     {
-        return $this->errorHandler->__invoke(function () use ($statement) {
+        return $this->errorHandler->handle(function () use ($statement) {
             $result = $this->options[\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY]
                 ? $this->mysqli->query($statement)
                 : $this->mysqli->real_query($statement);
@@ -144,7 +144,7 @@ class MysqliPDO extends \PDO
      */
     public function query($statement, $mode = null, $arg3 = null, array $ctorargs = array())
     {
-        return $this->errorHandler->__invoke(function () use ($statement, $mode, $arg3, $ctorargs) {
+        return $this->errorHandler->handle(function () use ($statement, $mode, $arg3, $ctorargs) {
             return new MysqliPDOStatement($this, __FUNCTION__, $statement, $mode, $arg3, $ctorargs);
         });
     }
@@ -228,7 +228,7 @@ class MysqliPDO extends \PDO
             $this->options[$option] = $value;
 
             if ($option == \PDO::ATTR_AUTOCOMMIT) {
-                $result &= $this->errorHandler->__invoke(function () use ($value) {
+                $result &= $this->errorHandler->handle(function () use ($value) {
                     return $this->mysqli->autocommit((bool)$value);
                 });
             }
