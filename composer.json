@@ -1,6 +1,13 @@
 {
     "name": "anonymous-php/mysqli-pdo-bridge",
     "type": "library",
+    "description": "Make your application PDO-compatible. This library gives you the possibility to use mysqli connection with the PDO interfaces.",
+    "keywords": [
+        "mysql",
+        "pdo",
+        "mysqli",
+        "php"
+    ],
     "license": "MIT",
     "authors": [
         {
