@@ -75,7 +75,7 @@ Error reporting modes implemented as in PDO but error codes and messages belong 
 
 ### Implemented PDO options (attributes)
 
-* PDO::ATTR_ERRMODE (PDO::ERRMODE_SILENT or PDO::ERRMODE_EXCEPTION, PDO::ERRMODE_SILENT by default)
+* PDO::ATTR_ERRMODE (PDO::ERRMODE_SILENT, PDO::ERRMODE_WARNING or PDO::ERRMODE_EXCEPTION, PDO::ERRMODE_SILENT by default)
 * PDO::ATTR_AUTOCOMMIT (true or false, true by default)
 * PDO::MYSQL_ATTR_USE_BUFFERED_QUERY (true or false, true by default)
 * PDO::ATTR_DEFAULT_FETCH_MODE (see implemented fetch modes)
