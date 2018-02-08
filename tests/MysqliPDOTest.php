@@ -178,7 +178,6 @@ SQL;
     public function testLastInsertId()
     {
         $pdo = new MysqliPDO($this->getMysqliConnection());
-        $pdo->exec('TRUNCATE TABLE `test`');
 
         $pdo->exec("INSERT INTO `test` (`a`, `b`, `c`, `d`) VALUES (2, 3.5, 'varchar', 'text')");
         $this->assertEquals(1, $pdo->lastInsertId());
@@ -217,8 +216,6 @@ SQL;
     {
         $mysqliPdo = new MysqliPDO($this->getMysqliConnection());
         $pdo = $this->getPdoConnection();
-
-        $pdo->exec('TRUNCATE TABLE `test`');
 
         $this->assertTrue($mysqliPdo->beginTransaction());
         $this->assertTrue($mysqliPdo->inTransaction());
