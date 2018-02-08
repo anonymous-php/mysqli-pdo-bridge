@@ -217,7 +217,6 @@ SQL;
         $mysqliPdo = new MysqliPDO($this->getMysqliConnection());
 
         $pdo = $this->getPdoConnection();
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         $this->assertTrue($mysqliPdo->beginTransaction());
         $this->assertTrue($mysqliPdo->inTransaction());
@@ -228,14 +227,14 @@ SQL;
         );
 
         $this->assertEquals(
-            $pdo->query('SELECT count(*) FROM `test')->fetchColumn(),
+            $pdo->query('SELECT count(*) FROM `test`')->fetchColumn(),
             0
         );
 
         $this->assertTrue($mysqliPdo->rollBack());
 
         $this->assertEquals(
-            $pdo->query('SELECT count(*) FROM `test')->fetchColumn(),
+            $pdo->query('SELECT count(*) FROM `test`')->fetchColumn(),
             0
         );
 
@@ -250,7 +249,7 @@ SQL;
         $this->assertTrue($mysqliPdo->commit());
 
         $this->assertEquals(
-            $pdo->query('SELECT count(*) FROM `test')->fetchColumn(),
+            $pdo->query('SELECT count(*) FROM `test`')->fetchColumn(),
             1
         );
     }
