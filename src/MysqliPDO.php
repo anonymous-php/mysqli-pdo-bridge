@@ -78,9 +78,11 @@ class MysqliPDO extends \PDO
     public function beginTransaction()
     {
         return $this->errorHandler->handle(function () {
-            return $this->mysqliTransaction == 0
-                ? $this->mysqli->begin_transaction() && ++$this->mysqliTransaction
-                : false;
+            if ($this->mysqliTransaction == 0) {
+                return $this->mysqli->begin_transaction() && ++$this->mysqliTransaction;
+            }
+
+            throw new MysqliPDOException('Transaction already started');
         });
     }
 

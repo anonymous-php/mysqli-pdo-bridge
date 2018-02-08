@@ -201,8 +201,6 @@ SQL;
         $this->assertTrue($mysqliPdo->beginTransaction());
         $this->assertTrue($mysqliPdo->inTransaction());
 
-        $this->assertFalse($mysqliPdo->beginTransaction());
-
         $this->assertEquals(
             $mysqliPdo->exec("INSERT INTO `test` (`a`, `b`, `c`, `d`) VALUES (2, 3.5, 'varchar', 'text')"),
             1
@@ -234,6 +232,16 @@ SQL;
             $pdo->query('SELECT count(*) FROM `test')->fetchColumn(),
             1
         );
+    }
+
+    /**
+     * @expectedException \Anonymous\MysqliPdoBridge\MysqliPDOException
+     */
+    public function testExceptionOnNestedTransaction()
+    {
+        $mysqliPdo = new MysqliPDO($this->getMysqliConnection());
+        $this->assertTrue($mysqliPdo->beginTransaction());
+        $mysqliPdo->beginTransaction();
     }
 
 }
