@@ -215,7 +215,9 @@ SQL;
     public function testTransaction()
     {
         $mysqliPdo = new MysqliPDO($this->getMysqliConnection());
+
         $pdo = $this->getPdoConnection();
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         $this->assertTrue($mysqliPdo->beginTransaction());
         $this->assertTrue($mysqliPdo->inTransaction());
