@@ -217,7 +217,6 @@ SQL;
         $mysqliPdo = new MysqliPDO($this->getMysqliConnection());
 
         $pdo = $this->getPdoConnection();
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         $this->assertTrue($mysqliPdo->beginTransaction());
         $this->assertTrue($mysqliPdo->inTransaction());
@@ -261,8 +260,13 @@ SQL;
     public function testExceptionOnNestedTransaction()
     {
         $mysqliPdo = new MysqliPDO($this->getMysqliConnection());
-        $this->assertTrue($mysqliPdo->beginTransaction());
-        $mysqliPdo->beginTransaction();
+        try {
+            $this->assertTrue($mysqliPdo->beginTransaction());
+            $mysqliPdo->beginTransaction();
+        } catch (\Anonymous\MysqliPdoBridge\MysqliPDOException $e) {
+            $mysqliPdo->rollBack();
+            throw $e;
+        }
     }
 
 }
