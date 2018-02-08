@@ -254,19 +254,19 @@ SQL;
         );
     }
 
-    /**
-     * @expectedException \Anonymous\MysqliPdoBridge\MysqliPDOException
-     */
-    public function testExceptionOnNestedTransaction()
-    {
-        $mysqliPdo = new MysqliPDO($this->getMysqliConnection());
-        try {
-            $this->assertTrue($mysqliPdo->beginTransaction());
-            $mysqliPdo->beginTransaction();
-        } catch (\Anonymous\MysqliPdoBridge\MysqliPDOException $e) {
-            $mysqliPdo->rollBack();
-            throw $e;
-        }
-    }
+//    /**
+//     * @expectedException \Anonymous\MysqliPdoBridge\MysqliPDOException
+//     */
+//    public function testExceptionOnNestedTransaction()
+//    {
+//        $mysqliPdo = new MysqliPDO($this->getMysqliConnection());
+//        try {
+//            $this->assertTrue($mysqliPdo->beginTransaction());
+//            $mysqliPdo->beginTransaction();
+//        } catch (\Anonymous\MysqliPdoBridge\MysqliPDOException $e) {
+//            $mysqliPdo->rollBack();
+//            throw $e;
+//        }
+//    }
 
 }
