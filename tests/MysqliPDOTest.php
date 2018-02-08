@@ -48,6 +48,31 @@ final class MysqliPDOTest extends TestCase
         return $this->pdo;
     }
 
+    protected function prepeareDatabase()
+    {
+        $dropQuery = "DROP TABLE IF EXISTS `test`";
+        $createQuery = <<<SQL
+CREATE TABLE `test` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `a` int(11) DEFAULT 0,
+  `b` double DEFAULT 0.0,
+  `c` text DEFAULT NULL,
+  `d` text DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB CHARSET=utf8;
+SQL;
+
+        $this->getMysqliConnection()->query($dropQuery);
+        $this->getMysqliConnection()->query($createQuery);
+    }
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->prepeareDatabase();
+    }
+
     public function testCanConnect()
     {
         list($host, $port, $dbname) = array(getenv('host'), getenv('port'), getenv('dbname'));
@@ -121,9 +146,6 @@ CREATE TABLE `test` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB CHARSET=utf8;
 SQL;
-
-        $this->getMysqliConnection()->query($dropQuery);
-        $this->getMysqliConnection()->query($createQuery);
 
         $pdo = $this->getPdoConnection();
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
