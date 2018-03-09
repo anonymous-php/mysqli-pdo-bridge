@@ -90,6 +90,8 @@ class MysqliPDOStatement extends \PDOStatement
 
                 if (is_array($input_parameters) && count($input_parameters)) {
                     foreach ($input_parameters as $name => $value) {
+                        $n = false;
+
                         if (is_numeric($name)) {
                             foreach ($this->queryBindings as $key => $var) {
                                 if ($var == '?' && !array_key_exists($key, $mysqliParams)) {
@@ -100,10 +102,10 @@ class MysqliPDOStatement extends \PDOStatement
                         } else {
                             $name = substr($name, 0, 1) != ':' ? ":{$name}" : $name;
                             $n = array_search($name, $this->queryBindings);
+                        }
 
-                            if ($n === false) {
-                                return false;
-                            }
+                        if ($n === false) {
+                            return false;
                         }
 
                         $mysqliParams[$n] = $value;

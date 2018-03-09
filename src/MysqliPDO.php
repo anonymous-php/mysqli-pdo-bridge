@@ -67,8 +67,9 @@ class MysqliPDO extends \PDO
      */
     public function prepare($statement, $options = null)
     {
-        return $this->errorHandler->handle(function () use ($statement, $options) {
-            return new MysqliPDOStatement($this, __FUNCTION__, $statement, $options);
+        $function = __FUNCTION__;
+        return $this->errorHandler->handle(function () use ($statement, $options, $function) {
+            return new MysqliPDOStatement($this, $function, $statement, $options);
         });
     }
 
@@ -148,8 +149,9 @@ class MysqliPDO extends \PDO
      */
     public function query($statement, $mode = null, $arg3 = null, array $ctorargs = array())
     {
-        return $this->errorHandler->handle(function () use ($statement, $mode, $arg3, $ctorargs) {
-            return new MysqliPDOStatement($this, __FUNCTION__, $statement, $mode, $arg3, $ctorargs);
+        $function = __FUNCTION__;
+        return $this->errorHandler->handle(function () use ($statement, $mode, $arg3, $ctorargs, $function) {
+            return new MysqliPDOStatement($this, $function, $statement, $mode, $arg3, $ctorargs);
         });
     }
 
