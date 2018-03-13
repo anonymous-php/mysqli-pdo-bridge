@@ -409,7 +409,7 @@ class MysqliPDOStatement extends \PDOStatement
     protected function parseQuery($queryString)
     {
         $queryString = preg_replace('/[\s\t\n;]+$/', '', $queryString);
-        $parts = preg_split('/(FROM|AS|WHERE|HAVING|AND|OR|LIMIT|OFFSET|ORDER|,)/i', $queryString, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $parts = preg_split('/\b(FROM|AS|WHERE|HAVING|AND|OR|LIMIT|OFFSET|ORDER|,)\b/i', $queryString, -1, PREG_SPLIT_DELIM_CAPTURE);
 
         $bindings = array();
         $mysqliQuery = '';
