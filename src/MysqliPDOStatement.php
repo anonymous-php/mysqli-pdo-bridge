@@ -408,25 +408,34 @@ class MysqliPDOStatement extends \PDOStatement
      */
     protected function parseQuery($queryString)
     {
-        $queryString = preg_replace('/[\s\t\n;]+$/', '', $queryString);
-        $parts = preg_split('/\b(FROM|AS|WHERE|HAVING|AND|OR|LIMIT|OFFSET|ORDER|,)\b/i', $queryString, -1, PREG_SPLIT_DELIM_CAPTURE);
-
-        $bindings = array();
+        $strings = [];
+        $bindings = [];
         $mysqliQuery = '';
 
-        foreach ($parts as $part) {
-            $mysqliPart = $part;
+        if (preg_match_all('/\'([^\'\\\\]*(?:\\\\.[^\'\\\\]*)*)\'/ms', $queryString, $matches, PREG_OFFSET_CAPTURE)) {
+            foreach ($matches[1] as $match) {
+                $strings[] = [$match[1], $match[1] + mb_strlen($match[0])];
+            }
+        }
 
-            $part = preg_replace('/[\s\t\n\(\)]+$/i', '', $part);
-            if (preg_match('/(\:[a-z0-9_]+|\?)$/i', $part, $match)) {
-                $bindings[] = $match[1];
+        $cursor = 0;
 
-                if ($match[1] != '?') {
-                    $mysqliPart = str_replace($match[1], '?', $mysqliPart);
+        if (preg_match_all('/(\:\b[a-z0-9_-]+\b|\?)/ims', $queryString, $matches, PREG_OFFSET_CAPTURE)) {
+            foreach ($matches[1] as $match) {
+                foreach ($strings as $string) {
+                    if ($match[1] >= $string[0] && $match[1] <= $string[1]) {
+                        continue(2);
+                    }
                 }
+
+                $bindings[] = $match[0];
+                $mysqliQuery .= mb_substr($queryString, $cursor, $match[1] - $cursor) . '?';
+                $cursor = $match[1] + mb_strlen($match[0]);
             }
 
-            $mysqliQuery .= $mysqliPart;
+            if ($cursor < mb_strlen($queryString)) {
+                $mysqliQuery .= mb_substr($queryString, $cursor);
+            }
         }
 
         $this->queryMysqli = $mysqliQuery;
