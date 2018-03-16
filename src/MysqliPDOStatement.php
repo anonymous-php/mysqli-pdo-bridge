@@ -412,7 +412,7 @@ class MysqliPDOStatement extends \PDOStatement
         $bindings = [];
         $mysqliQuery = '';
 
-        if (preg_match_all('/\'([^\'\\\\]*(?:\\\\.[^\'\\\\]*)*)\'/ms', $queryString, $matches, PREG_OFFSET_CAPTURE)) {
+        if (preg_match_all('/"([^#"\\\\]*(?:\\\\.[^#"\\\\]*)*)"|\'([^\'\\\\]*(?:\\\\.[^\'\\\\]*)*)\'/ms', $queryString, $matches, PREG_OFFSET_CAPTURE)) {
             foreach ($matches[1] as $match) {
                 $strings[] = [$match[1], $match[1] + mb_strlen($match[0])];
             }
