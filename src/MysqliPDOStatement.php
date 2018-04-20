@@ -436,6 +436,8 @@ class MysqliPDOStatement extends \PDOStatement
             if ($cursor < mb_strlen($queryString)) {
                 $mysqliQuery .= mb_substr($queryString, $cursor);
             }
+        } else {
+            $mysqliQuery = $queryString;
         }
 
         $this->queryMysqli = $mysqliQuery;
