@@ -65,7 +65,7 @@ class MysqliPDOStatement extends \PDOStatement
             $paramsCount = count($this->queryBindings);
 
             if ($paramsCount) {
-                $types = '';
+                $types = [];
 
                 foreach ($this->statementBindings as $name => $params) {
                     if (is_numeric($name)) {
@@ -85,7 +85,7 @@ class MysqliPDOStatement extends \PDOStatement
                         $value = mb_substr($value, 0, $length);
                     }
                     $mysqliParams[$n] = $value;
-                    $types .= $this->mapPDOToMysqliType($type);
+                    $types[$n] = $this->mapPDOToMysqliType($type);
                 }
 
                 if (is_array($input_parameters) && count($input_parameters)) {
@@ -109,18 +109,18 @@ class MysqliPDOStatement extends \PDOStatement
                         }
 
                         $mysqliParams[$n] = $value;
-                        $types .= 's';
+                        $types[$n] .= 's';
                     }
                 }
 
                 if (!empty($mysqliParams)) {
-                    $params = array();
-                    foreach ($mysqliParams as $key => $value) {
-                        $params[$key] = &$mysqliParams[$key];
+                    $params = [''];
+                    for ($i = 0; $i < count($mysqliParams); $i++) {
+                        $params[0] .= $types[$i];
+                        $params[$i + 1] = &$mysqliParams[$i];
                     }
 
-                    array_unshift($mysqliParams, $types);
-                    if (!call_user_func_array([$this->statement, 'bind_param'], $mysqliParams)) {
+                    if (!call_user_func_array([$this->statement, 'bind_param'], $params)) {
                         return false;
                     }
                 }
