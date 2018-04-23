@@ -114,8 +114,6 @@ class MysqliPDOStatement extends \PDOStatement
                 }
 
                 if (!empty($mysqliParams)) {
-                    ksort($mysqliParams);
-
                     $params = array();
                     foreach ($mysqliParams as $key => $value) {
                         $params[$key] = &$mysqliParams[$key];
