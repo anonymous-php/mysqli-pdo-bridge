@@ -109,7 +109,7 @@ class MysqliPDOStatement extends \PDOStatement
                         }
 
                         $mysqliParams[$n] = $value;
-                        $types[$n] .= 's';
+                        $types[$n] = 's';
                     }
                 }
 
