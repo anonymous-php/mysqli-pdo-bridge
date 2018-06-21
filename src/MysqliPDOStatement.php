@@ -213,7 +213,9 @@ class MysqliPDOStatement extends \PDOStatement
      */
     public function fetchColumn($column_number = 0)
     {
-        return $this->result->fetch_field_direct($column_number);
+        $row = $this->result->fetch_row();
+
+        return $row[$column_number];
     }
 
     /**
